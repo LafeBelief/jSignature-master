@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<script src="libs/modernizr.js"></script>
+<!--[if lt IE 9]>
+<script type="text/javascript" src="libs/flashcanvas.js"></script>
+<![endif]-->
+</head>
+<body>
+<div>
+<div id="content">
+	<div>
+		<div id="signature" style="border: solid 1px red;"></div>
+	</div>
+	<div>
+		<input type="button" id="save" value="保存"/>
+		<input type="button" id="reset" value="重置"/>
+	</div>
+	<div>
+		<p>Display Area:</p><div id="displayarea"></div>
+	</div>
+</div>
+</div>
+<script src="http://www.jq22.com/jquery/jquery-1.10.2.js"></script>
+<script src="libs/jSignature.min.noconflict.js"></script>
+<script>
+(function($) {
+	var topics = {};
+	$.publish = function(topic, args) {
+	    if (topics[topic]) {
+	        var currentTopic = topics[topic],
+	        args = args || {};
+	
+	        for (var i = 0, j = currentTopic.length; i < j; i++) {
+	            currentTopic[i].call($, args);
+	        }
+	    }
+	};
+	$.subscribe = function(topic, callback) {
+	    if (!topics[topic]) {
+	        topics[topic] = [];
+	    }
+	    topics[topic].push(callback);
+	    return {
+	        "topic": topic,
+	        "callback": callback
+	    };
+	};
+})(jQuery);
+</script>
+<script>
+	$(function(){
+		var pubsubprefix = 'jSignature.demo.';
+		var $extraarea = $('#displayarea');
+		var $sigdiv = $("#signature").jSignature(
+			{
+				UndoButton:true,
+				width:500,
+				height:500,
+				color:"#000",
+				lineWidth:5
+			});
+
+		$('#reset').click(function(){
+			$sigdiv.jSignature('reset');
+		})
+
+		$('#save').click(function(){
+			var data = $sigdiv.jSignature('getData', 'svgbase64');//'image/svg+xml;base64' 
+			$.publish(pubsubprefix +'formatchanged');
+
+			var i = new Image()
+			i.src = 'data:' + data[0] + ',' + data[1]
+			$(i).appendTo($extraarea)
+		})
+	})
+</script>
+</body>
+</html>
